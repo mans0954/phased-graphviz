@@ -53,6 +53,9 @@ class PhasedGraphviz(object):
                     obj_phases = parse_phases(obj.get('phase') or '', min_phase, max_phase)
                     obj_style = (obj.get('style') or obj_defaults.get('style') or '').split()
 
+                    if obj.get('phase'):
+                        del obj.obj_dict['attributes']['phase']
+
                     if transition:
                         in_cur_phase = phase in obj_phases
                         in_next_phase = (phase + 1) in obj_phases
