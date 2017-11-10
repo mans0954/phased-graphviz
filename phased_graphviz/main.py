@@ -1,4 +1,5 @@
 import copy
+import os
 import sys
 
 import itertools
@@ -19,7 +20,10 @@ class PhasedGraphviz(object):
         new_graph.__setstate__(copy.deepcopy(graph.__getstate__()))
         return new_graph
 
-    def generate(self, base_filename, generate_gif=False, gif_delay=300):
+    def generate(self, base_filename, formats=(), generate_gif=False, gif_delay=300, add_graph_label=False):
+        if generate_gif:
+            formats.add('png')
+
         min_phase, max_phase = 0, 0
 
         # Find the min and max phases across all objects in the graph
@@ -72,15 +76,23 @@ class PhasedGraphviz(object):
 
                     obj.set('style', ', '.join(obj_style))
 
-                if transition:
-                    phase_graph.set("label", "Phase {}\n(transitional changes)\n".format(phase+1))
-                else:
-                    phase_graph.set("label", "Phase {}\n \n".format(phase))
+                if add_graph_label:
+                    if transition:
+                        phase_graph.set("label", "Phase {}\n(transitional changes)\n".format(phase+1))
+                    else:
+                        phase_graph.set("label", "Phase {}\n \n".format(phase))
 
                 filename = base_filename + '-{}{}'.format(phase, '-transition' if transition else '')
                 phase_graph.write(filename + '.dot')
-                subprocess.call(['dot', filename + '.dot', '-Tpng',  '-o', filename + '.png'])
+                for format in formats:
+                    subprocess.call(['dot', filename + '.dot', '-T' + format,  '-o', filename + '.' + format])
                 generated_filenames.append(filename + '.png')
+
+        for ext in ['dot'] + list(formats):
+            if os.path.lexists(base_filename + '-final.{}'.format(ext)):
+                os.remove(base_filename + '-final.{}'.format(ext))
+            os.symlink(os.path.relpath(base_filename + '-{}.{}'.format(max_phase, ext), os.path.dirname(base_filename)),
+                       base_filename + '-final.{}'.format(ext))
 
         if generate_gif:
             # Turn all our PNGs into an animated GIF
