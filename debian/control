@@ -1,0 +1,12 @@
+Source: phased-graphviz
+Maintainer: Christopher Hoskin <mans0954@debian.org>
+Section: python
+Priority: optional
+Build-Depends: dh-python, python3-all, debhelper (>= 9)
+Standards-Version: 3.9.6
+
+Package: python3-phased-graphviz
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: UNKNOWN
+
